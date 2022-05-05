@@ -9,7 +9,7 @@ const pool = new Pool({
   database: 'lightbnb'
 });
 
-pool.query(`SELECT title FROM properties LIMIT 10;`).then(response => {console.log(response)})
+// pool.query(`SELECT title FROM properties LIMIT 10;`).then(response => {console.log(response)})
 /// Users
 
 /**
@@ -18,16 +18,29 @@ pool.query(`SELECT title FROM properties LIMIT 10;`).then(response => {console.l
  * @return {Promise<{}>} A promise to the user.
  */
 const getUserWithEmail = function(email) {
-  let user;
-  for (const userId in users) {
-    user = users[userId];
-    if (user.email.toLowerCase() === email.toLowerCase()) {
-      break;
-    } else {
-      user = null;
-    }
-  }
-  return Promise.resolve(user);
+  const queryString = `SELECT * FROM users 
+  WHERE email = $1`;
+  return pool
+  .query(queryString, [email])
+  .then((result => {
+    console.log(result.rows)
+    return result.rows[0];
+  }))
+  .catch((err) => {
+    console.log(err.message)
+    return null;
+  });
+
+  // let user;
+  // for (const userId in users) {
+  //   user = users[userId];
+  //   if (user.email.toLowerCase() === email.toLowerCase()) {
+  //     break;
+  //   } else {
+  //     user = null;
+  //   }
+  // }
+  // return Promise.resolve(user);
 }
 exports.getUserWithEmail = getUserWithEmail;
 
@@ -79,7 +92,7 @@ const getAllProperties = function(options, limit = 10) {
   return pool
   .query (`SELECT * FROM properties LIMIT $1`, [limit])
   .then((result => {
-    console.log(result.rows);
+    // console.log(result.rows);
     return result.rows;
   }))
   .catch((err) => {
