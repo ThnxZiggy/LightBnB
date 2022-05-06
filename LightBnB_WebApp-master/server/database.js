@@ -144,9 +144,11 @@ const getAllProperties = function(options, limit = 10) {
   //2 Setup an array to hold any parameters that may be available for the query.
   const queryParams = [];
   let clausePrefix = `WHERE`;
+
   // 3 Check if a city has been passed in as an option. Add the city to the params array and create a WHERE clause for the city.
   // We can use the length of the array to dynamically get the $n placeholder number. Since this is the first parameter, it will be $1.
   // The % syntax for the LIKE clause must be part of the parameter, not the query.
+  
   if (options.city) {
     // queryString += 'WHERE city LIKE "%'+options.city+'%"'
     // queryString += ` city LIKE $`+queryParams.length;
@@ -156,9 +158,7 @@ const getAllProperties = function(options, limit = 10) {
     clausePrefix = `AND`;
   }
 
-
-
-  // 5 Console log everything just to make sure we've done it right.
+  // 4 Console log everything just to make sure we've done it right.
   console.log(queryString, queryParams);
 
 
@@ -180,19 +180,21 @@ const getAllProperties = function(options, limit = 10) {
     clausePrefix = `AND`
   };
 
-  if (options.rating) {
+  queryString += `GROUP BY properties.id `;
+
+  if (options.minimum_rating) {
     queryParams.push(options.rating);
-    queryString += `${clausePrefix} properties.rating >= $${queryParams.length} `;  
+    queryString += `HAVING AVG(property_reviews.rating) >= $${queryParams.length} `;  
     clausePrefix = `AND`
   };
 
-  // 4 Add any query that comes after the WHERE clause.
+  // 5 Add any query that comes after the WHERE clause.
   queryParams.push(limit);
   queryString += `
-  GROUP BY properties.id
   ORDER BY cost_per_night
   LIMIT $${queryParams.length};
   `;
+  
   //6 Run the query.
   return pool
   .query (queryString, queryParams)
